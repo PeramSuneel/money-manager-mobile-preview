@@ -153,6 +153,7 @@ try {
   await page.locator('#recordForm button[type="submit"]').click();
   await page.locator('#creditCardList').getByText('Test Bank').waitFor();
   const cardText = await page.locator('#creditCardList').innerText();
+  if (!(await page.locator('#creditCardList .credit-card-item').first().evaluate(el => el.classList.contains('metric-card')))) throw new Error('Credit-card bill does not use the shared metric-card style.');
   if (!cardText.includes('12,500') || !cardText.includes('Due date: 2026-11-12') || !cardText.includes('Minimum due: ₹625')) {
     throw new Error('Credit-card bill amount, due date, or minimum due is not displayed.');
   }
@@ -170,6 +171,20 @@ try {
   await page.locator('#recordForm button[type="submit"]').click();
   if (!(await page.locator('#creditCardList').innerText()).includes('Paid')) throw new Error('Fully paid credit-card bill was not marked Paid.');
   if (!(await page.locator('#cardTotalOutstanding').innerText()).includes('0')) throw new Error('Outstanding total did not clear after full payment.');
+  await page.locator('#loanAdd').click();
+  await page.locator('#formFields [name="name"]').fill('Test Car Loan');
+  await page.locator('#formFields [name="type"]').selectOption('Car loan');
+  await page.locator('#formFields [name="balance"]').fill('350000');
+  await page.locator('#formFields [name="rate"]').fill('9.5');
+  await page.locator('#formFields [name="emi"]').fill('12500');
+  await page.locator('#formFields [name="dueDate"]').fill('2026-11-15');
+  await page.locator('#formFields [name="months"]').fill('36');
+  await page.locator('#recordForm button[type="submit"]').click();
+  await page.locator('#loanCardList').getByText('Test Car Loan').waitFor();
+  const loanCard = page.locator('#loanCardList .loan-card-item').first();
+  if (!(await loanCard.evaluate(el => el.classList.contains('metric-card'))) || !(await loanCard.innerText()).includes('12,500')) {
+    throw new Error('Loan details are not displayed in the shared metric-card style.');
+  }
   if (errors.length) throw new Error('Browser errors: ' + errors.join(' | '));
   console.log('PASS: mobile dashboard order, live gold rates, gold holding, searchable dropdowns, mobile transaction cards, All/Income/Spending filters, dashboard navigation, and ₹99,00,000 display.');
 } finally {
