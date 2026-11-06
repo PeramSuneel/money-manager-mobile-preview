@@ -70,11 +70,11 @@ function goldLoan(input){
  if(!input||typeof input!=='object')return null;
  const grams=nonNegative(input.grams),rate=nonNegative(input.rate),ltv=nonNegative(input.ltv),annual=nonNegative(input.annualRate),months=finite(input.months),fee=nonNegative(input.fee),gst=nonNegative(input.gst),entered=nonNegative(input.enteredAmount);
  if([grams,rate,ltv,annual,fee,gst].some(x=>!Number.isFinite(x))||grams<=0||rate<=0||ltv<=0||!Number.isInteger(months)||months<1||ltv>100||gst>100)return null;
- const goldValue=round2(grams*rate),maxLoan=round2(goldValue*ltv/100),principal=entered>0?entered:maxLoan;
+ const goldValue=round2(grams*rate),maxLoan=round2(goldValue*ltv/100),requestedAmount=entered>0?entered:maxLoan,requestedTooHigh=requestedAmount>maxLoan,principal=Math.min(requestedAmount,maxLoan);
  const emi=monthlyEmi(principal,annual,months);
  if(emi===null)return null;
  const total=round2(emi*months),interest=round2(Math.max(0,total-principal)),feeGst=round2(fee*gst/100);
- return {goldValue,maxLoan,principal,emi,total,interest,fee,feeGst,feeTotal:round2(fee+feeGst),requestedTooHigh:entered>maxLoan};
+ return {goldValue,maxLoan,principal,emi,total,interest,fee,feeGst,feeTotal:round2(fee+feeGst),requestedAmount,requestedTooHigh};
 }
 const api={round2,sumMoney,remainingBalance,transactionFlow,metalValue,monthlyEmi,investmentGrams,jewellery,goldLoan};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
