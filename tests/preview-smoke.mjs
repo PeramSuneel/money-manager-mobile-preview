@@ -26,19 +26,20 @@ const errors = [];
 try {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
   page.on('pageerror', error => errors.push(error.message));
+  await page.addInitScript(() => localStorage.setItem('mmMarketCache.v2', JSON.stringify({rates:{g24:14500,g22:13290,g18:10875,silver:180,change24:100,change22:90,change18:75,changeSilver:2},stamp:'2026-11-06',source:'Smoke test rates',savedAt:Date.now()})));
   await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
   await page.locator('#heroNetWorth').waitFor();
 
   const order = await page.evaluate(() => {
     const top = selector => document.querySelector(selector).getBoundingClientRect().top;
     return {
-      rates: top('#dashboardMetals'),
       metrics: top('.dashboard-metrics'),
       recent: top('.lower-grid'),
+      rates: top('#dashboardMetals'),
       charts: top('#page-dashboard > .content-grid:not(.lower-grid)')
     };
   });
-  if (!(order.rates < order.metrics && order.metrics < order.recent && order.recent < order.charts)) {
+  if (!(order.metrics < order.recent && order.recent < order.rates && order.rates < order.charts)) {
     throw new Error('Dashboard sections are not in the requested order: ' + JSON.stringify(order));
   }
   const columns = await page.locator('.dashboard-metrics').evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length);
@@ -46,8 +47,17 @@ try {
   if (!(await page.locator('#dashboardMetals').innerText()).includes('Gold & Silver Rates - Today')) {
     throw new Error('Dashboard rates heading is missing.');
   }
+  if (await page.locator('#dashboardMetalContent').isHidden()) throw new Error('Dashboard gold/silver rates are hidden by default.');
+  if ((await page.locator('#dashGold24').innerText()).trim() === '—') throw new Error('Cached gold rate is not rendered on dashboard.');
 
   await page.locator('#menuToggle').click();
+  await page.locator('#nav [data-page="markets"]').click();
+  await page.locator('#holdingGrams').fill('20');
+  await page.locator('#addGoldHolding').click();
+  await page.waitForFunction(() => document.querySelector('#goldHoldingRows')?.innerText.includes('20.000 g'));
+  if (!(await page.locator('#goldHoldingValue').innerText()).includes('₹')) throw new Error('Gold holding value was not calculated from the cached rate.');
+  if (await page.locator('#goldHoldingRows tr').count() !== 1) throw new Error('Gold holding did not create exactly one row.');
+    await page.locator('#menuToggle').click();
   await page.locator('#nav [data-page="transactions"]').click();
   await page.locator('#txAdd').click();
   const type = page.locator('#formFields [name="type"]');
@@ -56,16 +66,23 @@ try {
   if (await type.locator('option').first().getAttribute('value') !== 'Expense') {
     throw new Error('Spending display label must retain the existing Expense data value.');
   }
-  const categoryList = page.locator('#suggestions-category');
-  const paidViaList = page.locator('#suggestions-account');
-  const categoryOptions = await categoryList.locator('option').evaluateAll(nodes => nodes.map(n => n.value));
-  const paidViaOptions = await paidViaList.locator('option').evaluateAll(nodes => nodes.map(n => n.value));
-  if (!categoryOptions.includes('Food')) throw new Error('Category suggestions are missing.');
-  if (!paidViaOptions.includes('UPI')) throw new Error('Paid via suggestions are missing.');
+  const categoryCombo = page.locator('.suggest-combo').filter({ has: page.locator('[name="category"]') });
+  const paidViaCombo = page.locator('.suggest-combo').filter({ has: page.locator('[name="account"]') });
+  await categoryCombo.locator('.suggest-toggle').click();
+  if (!(await categoryCombo.locator('.suggest-menu').innerText()).includes('Food')) throw new Error('Category dropdown does not open its options.');
+  await categoryCombo.locator('[data-value="Food"]').click();
+  await paidViaCombo.locator('.suggest-toggle').click();
+  if (!(await paidViaCombo.locator('.suggest-menu').innerText()).includes('UPI')) throw new Error('Paid via dropdown does not open its options.');
+  await paidViaCombo.locator('[data-value="UPI"]').click();
+  const categoryOptions = await categoryCombo.locator('.suggest-menu').innerText().catch(() => '');
+  const paidViaOptions = await paidViaCombo.locator('.suggest-menu').innerText().catch(() => '');
+  if (await page.locator('[name="category"]').inputValue() !== 'Food') throw new Error('Category suggestion did not populate the input.');
+  if (await page.locator('[name="account"]').inputValue() !== 'UPI') throw new Error('Paid via suggestion did not populate the input.');
 
   await type.selectOption('Income');
-  const incomeOptions = await categoryList.locator('option').evaluateAll(nodes => nodes.map(n => n.value));
-  if (!incomeOptions.includes('Salary')) throw new Error('Category suggestions did not update for Income.');
+  await categoryCombo.locator('.suggest-toggle').click();
+  if (!(await categoryCombo.locator('.suggest-menu').innerText()).includes('Salary')) throw new Error('Category suggestions did not update for Income.');
+  await categoryCombo.locator('.suggest-menu').locator('[data-value="Salary"]').click();
   await type.selectOption('Expense');
   await page.locator('#formFields [name="date"]').fill('2026-11-06');
   await page.locator('#formFields [name="description"]').fill('Preview smoke test');
@@ -81,7 +98,7 @@ try {
     throw new Error('Saved transaction did not preserve custom category/payment or Spending label.');
   }
   if (errors.length) throw new Error('Browser errors: ' + errors.join(' | '));
-  console.log('PASS: mobile dashboard order, compact metrics, gold/silver heading, editable suggestions, dynamic category options, custom values, and Spending terminology.');
+  console.log('PASS: mobile dashboard order, visible cached metal rates, gold holding valuation, searchable category/payment dropdowns, custom values, and Spending terminology.');
 } finally {
   await browser.close();
   server.close();
