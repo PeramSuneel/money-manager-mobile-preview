@@ -196,8 +196,8 @@ function syncHoldingPurity(){
  const metal=$('holdingMetal')?.value||'gold',select=$('holdingPurity');
  if(!select)return;
  const previous=select.value;
- select.innerHTML=metal==='silver'?'<option value="999">999 Fine Silver</option>':'<option value="22">22K / 916</option><option value="18">18K / 750</option><option value="24">24K</option>';
- select.value=metal==='silver'?'999':(['18','22','24'].includes(previous)?previous:'22');
+ select.innerHTML=metal==='silver'?'<option value="999">999 Fine</option><option value="925">925 Sterling</option><option value="900">900 Silver</option><option value="800">800 Silver</option>':'<option value="22">22K / 916</option><option value="18">18K / 750</option><option value="24">24K</option>';
+ select.value=metal==='silver'?(['999','925','900','800'].includes(previous)?previous:'999'):(['18','22','24'].includes(previous)?previous:'22');
  updateHoldingPreview();
 }
 function updateHoldingPreview(){
@@ -207,7 +207,7 @@ function updateHoldingPreview(){
  if(!Number.isFinite(grams)||grams<=0){amount.textContent='—';note.textContent='Enter the net weight to preview today’s estimated value.';return}
  if(value===null){amount.textContent='Rate unavailable';note.textContent='The current '+(metal==='silver'?'silver':'gold')+' rate is not available yet. Refresh rates to see an estimate.';return}
  amount.textContent=fmt(value);
- note.textContent=grams.toFixed(3)+' g × '+fmt(selectedRate(metal,purity))+' per gram · indicative metal value before saving';
+ note.textContent=grams.toFixed(3)+' g × '+fmt(selectedRate(metal,purity))+' per gram'+(metal==='silver'?' · '+purity+'/999 fineness':'')+' · indicative metal value before saving';
 }
 function renderGoldHoldings(){
  const rows=$('goldHoldingRows');if(!rows)return;
@@ -216,7 +216,7 @@ function renderGoldHoldings(){
  rows.innerHTML=goldHoldings.map((item,index)=>{
   const metal=holdingMetalName(item.metal),grams=num(item.grams),value=values[index];
   if(metal==='Silver')silverGrams+=grams;else goldGrams+=grams;
-  const purity=metal==='Silver'?'999 Fine':String(item.purity||'22')+'K';
+  const purity=metal==='Silver'?({999:'999 Fine',925:'925 Sterling',900:'900 Silver',800:'800 Silver'}[Number(item.purity)]||String(item.purity||'999')):String(item.purity||'22')+'K';
   const name=String(item.name||metal).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   return '<tr><td>'+name+'</td><td>'+metal+'</td><td>'+purity+'</td><td>'+grams.toFixed(3)+' g</td><td>'+(value===null?'Rate unavailable':fmt(value))+'</td><td><button class="text-button" type="button" data-remove-gold-holding="'+item.id+'">Remove</button></td></tr>';
  }).join('');
@@ -227,7 +227,7 @@ function renderGoldHoldings(){
  if($('goldHoldingSummary'))$('goldHoldingSummary').textContent=goldHoldings.length?goldGrams.toFixed(3)+' g gold · '+silverGrams.toFixed(3)+' g silver · '+(complete?'estimated at today’s published rates':'saved; total value will update when all rates are available'):'Add a gold or silver holding to calculate its value.';
 }
 function addGoldHolding(){
- const grams=Number($('holdingGrams')?.value),metal=$('holdingMetal')?.value||'gold',purity=metal==='silver'?'999':($('holdingPurity')?.value||'22'),name=$('holdingName')?.value.trim()||(metal==='silver'?'Silver':'Gold');
+ const grams=Number($('holdingGrams')?.value),metal=$('holdingMetal')?.value||'gold',purity=$('holdingPurity')?.value||(metal==='silver'?'999':'22'),name=$('holdingName')?.value.trim()||(metal==='silver'?'Silver':'Gold');
  if(!Number.isFinite(grams)||grams<=0){notifyGold('Enter a valid metal weight greater than zero.');return}
  goldHoldings.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name,metal:metal==='silver'?'Silver':'Gold',purity,grams:Math.round(grams*1000)/1000});
  try{localStorage.setItem('mmGoldHoldings.v1',JSON.stringify(goldHoldings))}catch{}
