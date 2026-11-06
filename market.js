@@ -189,6 +189,7 @@ function calculateInvestment(){const budget=Number($('investBudget')?.value),rat
 
 let goldHoldings=[];
 try{const saved=JSON.parse(localStorage.getItem('mmGoldHoldings.v1')||'[]');if(Array.isArray(saved))goldHoldings=saved}catch{}
+function goldRateForPurity(purity){return selectedRate('gold',String(purity))}
 function holdingMetalName(metal){return String(metal||'Gold').toLowerCase()==='silver'?'Silver':'Gold'}
 function holdingValue(item){return MoneyMath.metalValue(holdingMetalName(item.metal),item.purity||'22',item.grams,rates)}
 function syncHoldingPurity(){
