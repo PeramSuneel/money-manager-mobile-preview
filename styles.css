@@ -1126,3 +1126,50 @@ html[data-theme="dark"] .primary-navigation .nav-link.active[data-page="reports"
     display:none!important;
   }
 }
+
+
+/* Explicit final correction: compact the Credit Cards / Loans summary tiles and keep Overview neutral. */
+@media(max-width:720px){
+  #page-creditcards .metric-grid.three,
+  #page-loans .metric-grid.three{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:5px!important;
+    margin:0 0 9px!important;
+  }
+  #page-creditcards .metric-grid.three>.metric-card,
+  #page-loans .metric-grid.three>.metric-card{
+    height:78px!important;
+    min-height:78px!important;
+    max-height:78px!important;
+    padding:7px 6px!important;
+    gap:0!important;
+    overflow:hidden!important;
+  }
+  #page-creditcards .metric-grid.three .metric-label,
+  #page-loans .metric-grid.three .metric-label{
+    min-height:0!important;
+    height:auto!important;
+    font-size:8px!important;
+    line-height:1.15!important;
+  }
+  #page-creditcards .metric-grid.three .metric-card>strong,
+  #page-loans .metric-grid.three .metric-card>strong{
+    margin:5px 0 0!important;
+    font-size:clamp(12px,3.4vw,15px)!important;
+    line-height:1.05!important;
+  }
+  #page-creditcards .metric-grid.three .metric-card>small,
+  #page-loans .metric-grid.three .metric-card>small{display:none!important}
+  .primary-navigation .nav-link.active[data-page="dashboard"]{
+    color:var(--muted)!important;
+    background:transparent!important;
+    border:0!important;
+    border-top:0!important;
+    box-shadow:none!important;
+  }
+  .primary-navigation .nav-link.active[data-page="dashboard"] .nav-icon{
+    color:var(--muted)!important;
+    stroke:currentColor!important;
+  }
+}
