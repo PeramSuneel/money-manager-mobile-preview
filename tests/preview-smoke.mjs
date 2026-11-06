@@ -56,11 +56,15 @@ try {
   }
   if (await page.locator('#dashboardMetalContent').isHidden()) throw new Error('Dashboard gold/silver rates are hidden by default.');
   const metalToggle = page.locator('#dashboardMetalToggle');
-  if ((await metalToggle.innerText()).trim() !== '⌃') throw new Error('Expanded gold rates should show the original upward chevron.');
+  if ((await metalToggle.innerText()).trim() !== '−') throw new Error('Expanded gold rates should show a minus symbol.');
   await metalToggle.click();
-  if (!(await page.locator('#dashboardMetalContent').isHidden()) || (await metalToggle.innerText()).trim() !== '⌄') throw new Error('Collapsed gold rates should show a downward chevron.');
+  if (!(await page.locator('#dashboardMetalContent').isHidden()) || (await metalToggle.innerText()).trim() !== '+') throw new Error('Collapsed gold rates should show a plus symbol.');
   await metalToggle.click();
-  if (await page.locator('#dashboardMetalContent').isHidden() || (await metalToggle.innerText()).trim() !== '⌃') throw new Error('Expanded gold rates should restore the upward chevron.');
+  if (await page.locator('#dashboardMetalContent').isHidden() || (await metalToggle.innerText()).trim() !== '−') throw new Error('Expanded gold rates should restore the minus symbol.');
+  await page.locator('.dashboard-metals-heading > div').click();
+  if (!(await page.locator('#dashboardMetalContent').isHidden()) || (await metalToggle.innerText()).trim() !== '+') throw new Error('Clicking the rates header should minimise the section.');
+  await page.locator('.dashboard-metals-heading > div').click();
+  if (await page.locator('#dashboardMetalContent').isHidden() || (await metalToggle.innerText()).trim() !== '−') throw new Error('Clicking the rates header should expand the section again.');
   await page.waitForFunction(() => document.querySelector('#dashGold24')?.innerText.includes('14,346'), { timeout: 10000 }).catch(async error => {
     throw new Error('Gold-rate mock did not render. URL intercepted: ' + (await page.locator('#dashMetalSource').innerText().catch(() => 'no source')) + '; displayed value: ' + (await page.locator('#dashGold24').innerText().catch(() => 'missing')) + '; page errors: ' + errors.join(' | ') + '; original: ' + error.message);
   });
