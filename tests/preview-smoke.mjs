@@ -55,6 +55,12 @@ try {
     throw new Error('Dashboard rates heading is missing.');
   }
   if (await page.locator('#dashboardMetalContent').isHidden()) throw new Error('Dashboard gold/silver rates are hidden by default.');
+  const metalToggle = page.locator('#dashboardMetalToggle');
+  if ((await metalToggle.innerText()).trim() !== '⌃') throw new Error('Expanded gold rates should show the original upward chevron.');
+  await metalToggle.click();
+  if (!(await page.locator('#dashboardMetalContent').isHidden()) || (await metalToggle.innerText()).trim() !== '⌄') throw new Error('Collapsed gold rates should show a downward chevron.');
+  await metalToggle.click();
+  if (await page.locator('#dashboardMetalContent').isHidden() || (await metalToggle.innerText()).trim() !== '⌃') throw new Error('Expanded gold rates should restore the upward chevron.');
   await page.waitForFunction(() => document.querySelector('#dashGold24')?.innerText.includes('14,346'), { timeout: 10000 }).catch(async error => {
     throw new Error('Gold-rate mock did not render. URL intercepted: ' + (await page.locator('#dashMetalSource').innerText().catch(() => 'no source')) + '; displayed value: ' + (await page.locator('#dashGold24').innerText().catch(() => 'missing')) + '; page errors: ' + errors.join(' | ') + '; original: ' + error.message);
   });
