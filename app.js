@@ -142,7 +142,7 @@ $('spendBudgetSave').addEventListener('click',()=>{const cat=$('spendBudgetCateg
 $('spendBudgetList').addEventListener('click',e=>{const b=e.target.closest('[data-spend-budget-delete]');if(!b)return;delete db.spendBudgets[b.dataset.spendBudgetDelete];persist();renderSpendBudgets(spendingRange())});
 function renderSpendWatch(range,filtered){
  const currentMonth=monthKey(localDate()),selectedMonth=range.from.slice(0,7),current=selectedMonth===currentMonth&&range.mode!=='year';
- const monthRows=db.transactions.filter(t=>t.type==='Expense'&&monthKey(t.date)===currentMonth),days=Math.max(1,new Date().getDate()),elapsed=sum(monthRows,t=>num(t.amount)),monthDays=new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate(),forecast=current?elapsed/days*monthDays:null;
+ const monthRows=db.transactions.filter(t=>t.type==='Expense'&&monthKey(t.date)===currentMonth),days=Math.max(1,new Date().getDate()),elapsed=sum(monthRows,t=>num(t.amount)),monthDays=new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate(),forecast=current?MoneyMath.round2(elapsed/days*monthDays):null;
  const byCat={};filtered.forEach(t=>{const k=t.category||'Other';(byCat[k]=byCat[k]||[]).push(t)});
  const unusual=[];Object.entries(byCat).forEach(([cat,rows])=>{const avg=sum(rows,t=>num(t.amount))/rows.length;rows.filter(t=>num(t.amount)>avg*2&&rows.length>1).forEach(t=>unusual.push({t,avg}))});
  const notes=[];if(forecast!==null)notes.push('<div class="spend-breakdown-row"><span>Estimated month-end spend <small>Based on current month-to-date pace</small></span><b>'+money(forecast)+'</b></div>');
