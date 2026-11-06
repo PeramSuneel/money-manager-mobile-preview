@@ -189,21 +189,48 @@ function calculateInvestment(){const budget=Number($('investBudget')?.value),rat
 
 let goldHoldings=[];
 try{const saved=JSON.parse(localStorage.getItem('mmGoldHoldings.v1')||'[]');if(Array.isArray(saved))goldHoldings=saved}catch{}
-function goldRateForPurity(purity){return selectedRate('gold',String(purity))}
+function holdingMetalName(metal){return String(metal||'Gold').toLowerCase()==='silver'?'Silver':'Gold'}
+function holdingValue(item){return MoneyMath.metalValue(holdingMetalName(item.metal),item.purity||'22',item.grams,rates)}
+function syncHoldingPurity(){
+ const metal=$('holdingMetal')?.value||'gold',select=$('holdingPurity');
+ if(!select)return;
+ const previous=select.value;
+ select.innerHTML=metal==='silver'?'<option value="999">999 Fine Silver</option>':'<option value="22">22K / 916</option><option value="18">18K / 750</option><option value="24">24K</option>';
+ select.value=metal==='silver'?'999':(['18','22','24'].includes(previous)?previous:'22');
+ updateHoldingPreview();
+}
+function updateHoldingPreview(){
+ const metal=$('holdingMetal')?.value||'gold',purity=$('holdingPurity')?.value||'22',grams=Number($('holdingGrams')?.value),value=MoneyMath.metalValue(metal,purity,grams,rates);
+ const amount=$('holdingPreviewValue'),note=$('holdingPreviewNote');
+ if(!amount||!note)return;
+ if(!Number.isFinite(grams)||grams<=0){amount.textContent='—';note.textContent='Enter the net weight to preview today’s estimated value.';return}
+ if(value===null){amount.textContent='Rate unavailable';note.textContent='The current '+(metal==='silver'?'silver':'gold')+' rate is not available yet. Refresh rates to see an estimate.';return}
+ amount.textContent=fmt(value);
+ note.textContent=grams.toFixed(3)+' g × '+fmt(selectedRate(metal,purity))+' per gram · indicative metal value before saving';
+}
 function renderGoldHoldings(){
  const rows=$('goldHoldingRows');if(!rows)return;
- let totalGrams=0,totalValue=0;
- rows.innerHTML=goldHoldings.map(item=>{const rate=goldRateForPurity(item.purity),value=rate*num(item.grams);totalGrams+=num(item.grams);totalValue+=value;return '<tr><td>'+String(item.name||'Gold').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))+'</td><td>'+item.purity+'K</td><td>'+num(item.grams).toFixed(3)+' g</td><td>'+fmt(value)+'</td><td><button class="text-button" type="button" data-remove-gold-holding="'+item.id+'">Remove</button></td></tr>'}).join('');
+ const values=goldHoldings.map(holdingValue);
+ let goldGrams=0,silverGrams=0;
+ rows.innerHTML=goldHoldings.map((item,index)=>{
+  const metal=holdingMetalName(item.metal),grams=num(item.grams),value=values[index];
+  if(metal==='Silver')silverGrams+=grams;else goldGrams+=grams;
+  const purity=metal==='Silver'?'999 Fine':String(item.purity||'22')+'K';
+  const name=String(item.name||metal).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  return '<tr><td>'+name+'</td><td>'+metal+'</td><td>'+purity+'</td><td>'+grams.toFixed(3)+' g</td><td>'+(value===null?'Rate unavailable':fmt(value))+'</td><td><button class="text-button" type="button" data-remove-gold-holding="'+item.id+'">Remove</button></td></tr>';
+ }).join('');
  $('goldHoldingEmpty')?.classList.toggle('show',!goldHoldings.length);
- if($('goldHoldingValue'))$('goldHoldingValue').textContent=goldHoldings.length?(goldRateForPurity(goldHoldings[0]?.purity)?fmt(totalValue):'Rate unavailable'):'—';
- if($('goldHoldingSummary'))$('goldHoldingSummary').textContent=goldHoldings.length?totalGrams.toFixed(3)+' g total gold · '+(goldRateForPurity(goldHoldings[0]?.purity)?'estimated at today’s published rates':'saved; value will update when today’s rates load'):'Add your gold weight to calculate its value.';
+ const complete=goldHoldings.length>0&&values.every(v=>v!==null);
+ const totalValue=complete?MoneyMath.sumMoney(values):null;
+ if($('goldHoldingValue'))$('goldHoldingValue').textContent=!goldHoldings.length?'—':complete?fmt(totalValue):'Rate unavailable';
+ if($('goldHoldingSummary'))$('goldHoldingSummary').textContent=goldHoldings.length?goldGrams.toFixed(3)+' g gold · '+silverGrams.toFixed(3)+' g silver · '+(complete?'estimated at today’s published rates':'saved; total value will update when all rates are available'):'Add a gold or silver holding to calculate its value.';
 }
 function addGoldHolding(){
- const grams=num($('holdingGrams')?.value),purity=$('holdingPurity')?.value||'22',name=$('holdingName')?.value.trim()||'Gold';
- if(!(grams>0)){notifyGold('Enter a valid gold weight.');return}
- goldHoldings.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name,purity,grams});
+ const grams=Number($('holdingGrams')?.value),metal=$('holdingMetal')?.value||'gold',purity=metal==='silver'?'999':($('holdingPurity')?.value||'22'),name=$('holdingName')?.value.trim()||(metal==='silver'?'Silver':'Gold');
+ if(!Number.isFinite(grams)||grams<=0){notifyGold('Enter a valid metal weight greater than zero.');return}
+ goldHoldings.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name,metal:metal==='silver'?'Silver':'Gold',purity,grams:Math.round(grams*1000)/1000});
  try{localStorage.setItem('mmGoldHoldings.v1',JSON.stringify(goldHoldings))}catch{}
- $('holdingName').value='';$('holdingGrams').value='';renderGoldHoldings();
+ $('holdingName').value='';$('holdingGrams').value='';updateHoldingPreview();renderGoldHoldings();
 }
 function notifyGold(message){const el=$('goldHoldingSummary');if(el)el.textContent=message;else if($('goldLoanSummary'))$('goldLoanSummary').textContent=message}
 function calculateGoldLoan(){
@@ -219,9 +246,12 @@ function renderPurchases(){if(!$('metalPurchaseTable'))return;$('metalPurchaseTa
 function savePurchase(){const budget=Number($('investBudget')?.value),rate=Number($('investRate')?.value),gst=Number($('investGst')?.value),metal=$('investMetal')?.value||'gold',purity=metal==='silver'?'999':($('investPurity')?.value||'22')+'K',grams=MoneyMath.investmentGrams(budget,rate,gst);if(grams===null||!Number.isFinite(grams)){if($('metalPurchaseFeedback'))$('metalPurchaseFeedback').textContent='Enter a positive budget and rate, and a non-negative GST rate.';return}purchases.unshift({id:Date.now().toString(36),date:new Date().toLocaleDateString('en-CA'),metal:metal==='gold'?'Gold':'Silver',purity,rate,grams,budget});try{localStorage.setItem('mmMetalPurchases.v1',JSON.stringify(purchases))}catch{}renderPurchases();if($('metalPurchaseFeedback'))$('metalPurchaseFeedback').textContent='Purchase saved on this device.'}
 function calculateJewellery(){const result=MoneyMath.jewellery({rate:Number($('jewelRate')?.value),grams:Number($('jewelGrams')?.value),wastage:Number($('jewelWastage')?.value),making:Number($('jewelMaking')?.value),discount:Number($('jewelDiscount')?.value),gst:Number($('jewelGst')?.value),makingType:$('jewelMakingType')?.value||'gram'});if(!result){if($('jewelBreakdown'))$('jewelBreakdown').textContent='Enter valid non-negative values. Wastage, discount and GST must not exceed 100%.';if($('jewelTotal'))$('jewelTotal').textContent='—';return}const lines=[['Metal value',result.metal],['Wastage',result.waste],['Making charges',result.makingCost],['Subtotal',result.subtotal],['Discount',-result.discountValue],['GST',result.tax],['Final estimate',result.total]];if($('jewelBreakdown'))$('jewelBreakdown').innerHTML=lines.map((x,i)=>'<div class="calc-line '+(i===6?'total':'')+'"><span>'+x[0]+'</span><b>'+fmt(x[1])+'</b></div>').join('');if($('jewelTotal'))$('jewelTotal').textContent=fmt(result.total)}
 $('addGoldHolding')?.addEventListener('click',addGoldHolding);
+$('holdingMetal')?.addEventListener('change',syncHoldingPurity);
+['holdingPurity','holdingGrams'].forEach(id=>$(id)?.addEventListener('input',updateHoldingPreview));
+$('holdingPurity')?.addEventListener('change',updateHoldingPreview);
 $('goldHoldingRows')?.addEventListener('click',e=>{const b=e.target.closest('[data-remove-gold-holding]');if(b){goldHoldings=goldHoldings.filter(x=>x.id!==b.dataset.removeGoldHolding);try{localStorage.setItem('mmGoldHoldings.v1',JSON.stringify(goldHoldings))}catch{}renderGoldHoldings()}});
 ['loanGoldPurity','loanGoldGrams','loanGoldLtv','loanGoldAmount','loanGoldRate','loanGoldMonths','loanGoldFee','loanGoldGst'].forEach(id=>$(id)?.addEventListener('input',calculateGoldLoan));
 $('refreshMarket')?.addEventListener('click',refreshRates);$('saveMetalPurchase')?.addEventListener('click',savePurchase);$('metalPurchaseTable')?.addEventListener('click',e=>{const b=e.target.closest('[data-remove-metal]');if(b){purchases=purchases.filter(p=>p.id!==b.dataset.removeMetal);try{localStorage.setItem('mmMetalPurchases.v1',JSON.stringify(purchases))}catch{}renderPurchases()}});
 ['investMetal','investPurity'].forEach(id=>$(id)?.addEventListener('change',()=>{if($('investRate'))delete $('investRate').dataset.userEdited;syncRates();calculateInvestment()}));['jewelMetal','jewelPurity'].forEach(id=>$(id)?.addEventListener('change',()=>{if($('jewelRate'))delete $('jewelRate').dataset.userEdited;syncRates();calculateJewellery()}));['investBudget','investRate','investGst'].forEach(id=>$(id)?.addEventListener('input',()=>{if(id==='investRate')$('investRate').dataset.userEdited='1';calculateInvestment()}));['jewelRate','jewelGrams','jewelWastage','jewelMaking','jewelDiscount','jewelGst','jewelMakingType'].forEach(id=>$(id)?.addEventListener('input',()=>{if(id==='jewelRate')$('jewelRate').dataset.userEdited='1';calculateJewellery()}));
-renderPurchases();renderGoldHoldings();syncRates();calculateInvestment();calculateJewellery();calculateGoldLoan();draw();refreshRates();document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshRates()});window.addEventListener('online',refreshRates);setInterval(()=>{if(!document.hidden)refreshRates()},10*60*1000);
+renderPurchases();syncHoldingPurity();renderGoldHoldings();syncRates();updateHoldingPreview();calculateInvestment();calculateJewellery();calculateGoldLoan();draw();refreshRates();document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshRates()});window.addEventListener('online',refreshRates);setInterval(()=>{if(!document.hidden)refreshRates()},10*60*1000);
 })();
