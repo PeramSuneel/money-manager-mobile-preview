@@ -165,7 +165,7 @@ window.addEventListener('resize',()=>{if(document.querySelector('.page.active')?
 const menuToggle=$('menuToggle'),mainNav=$('nav');menuToggle?.addEventListener('click',()=>{let open=mainNav.classList.toggle('menu-open');menuToggle.setAttribute('aria-expanded',String(open));menuToggle.setAttribute('aria-label',open?'Close navigation menu':'Open navigation menu')});mainNav?.querySelectorAll('.nav-link').forEach(link=>link.addEventListener('click',()=>{mainNav.classList.remove('menu-open');menuToggle?.setAttribute('aria-expanded','false')}));document.addEventListener('click',e=>{if(mainNav?.classList.contains('menu-open')&&!e.target.closest('.site-navigation')){mainNav.classList.remove('menu-open');menuToggle?.setAttribute('aria-expanded','false')}});
 const dashboardMetalToggle=$('dashboardMetalToggle'),dashboardMetalContent=$('dashboardMetalContent');
 if(dashboardMetalToggle&&dashboardMetalContent){
- let collapsed=true;try{const saved=localStorage.getItem('mmDashboardMetalsCollapsed.v1');if(saved!==null)collapsed=saved==='1'}catch{}
+ let collapsed=true;
  const applyMetalCollapse=()=>{dashboardMetalContent.hidden=collapsed;dashboardMetalToggle.textContent=collapsed?'+':'−';dashboardMetalToggle.setAttribute('aria-expanded',String(!collapsed));dashboardMetalToggle.setAttribute('aria-label',collapsed?'Expand precious metals':'Minimize precious metals');dashboardMetalToggle.title=collapsed?'Expand precious metals':'Minimize precious metals'};
  dashboardMetalToggle.addEventListener('click',()=>{collapsed=!collapsed;applyMetalCollapse();try{localStorage.setItem('mmDashboardMetalsCollapsed.v1',collapsed?'1':'0')}catch{}});
  applyMetalCollapse();
