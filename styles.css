@@ -788,3 +788,12 @@ html,body{min-height:100%;height:auto}
 
 /* Keep the modal close control accessible while long forms are scrolled. */
 .modal-head{position:sticky;top:0;z-index:4;background:var(--surface);padding:5px 0 9px;margin-top:-5px}
+
+/* Gold ownership and loan calculators */
+.gold-tools-grid{align-items:start}
+.gold-holdings-table{margin-top:14px}
+.gold-holdings-table table{min-width:420px}
+.gold-tools-grid .calc-result{margin-top:14px}
+.gold-tools-grid .calc-breakdown{margin-top:14px}
+.loan-warning{color:var(--red)!important;font-weight:700}
+@media(max-width:720px){.gold-tools-grid{grid-template-columns:1fr}.gold-holdings-table table{min-width:390px}}
