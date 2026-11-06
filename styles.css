@@ -930,3 +930,12 @@ html,body{min-height:100%;height:auto}
   .main{padding-bottom:calc(82px + env(safe-area-inset-bottom))!important;}
   .app-footer{padding-bottom:8px!important;}
 }
+
+
+/* A backdrop-filter creates a containing block for fixed descendants. Disable it on the mobile header so the bottom navigation anchors to the viewport. */
+@media(max-width:720px){
+  .site-navigation{
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+  }
+}
