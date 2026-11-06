@@ -47,6 +47,8 @@ try {
     throw new Error('Dashboard rates heading is missing.');
   }
 
+  await page.locator('#menuToggle').click();
+  await page.locator('#nav [data-page="transactions"]').click();
   await page.locator('#txAdd').click();
   const type = page.locator('#formFields [name="type"]');
   const labels = await type.locator('option').allTextContents();
