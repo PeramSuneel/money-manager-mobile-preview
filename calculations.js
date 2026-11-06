@@ -19,7 +19,7 @@ function investmentGrams(budget,rate,gst){
 }
 function jewellery(input){
  const rate=nonNegative(input.rate),grams=nonNegative(input.grams),wastage=nonNegative(input.wastage),making=nonNegative(input.making),discount=nonNegative(input.discount),gst=nonNegative(input.gst);
- if([rate,grams,wastage,making,discount,gst].some(x=>!Number.isFinite(x))||discount>100||wastage>100||gst>100)return null;
+ if([rate,grams,wastage,making,discount,gst].some(x=>!Number.isFinite(x))||rate<=0||grams<=0||discount>100||wastage>100||gst>100)return null;
  const metal=round2(rate*grams),waste=round2(metal*wastage/100);
  const makingCost=round2(input.makingType==='percent'?metal*making/100:making*grams);
  const subtotal=round2(metal+waste+makingCost),discountValue=round2(subtotal*discount/100);
@@ -28,7 +28,7 @@ function jewellery(input){
 }
 function goldLoan(input){
  const grams=nonNegative(input.grams),rate=nonNegative(input.rate),ltv=nonNegative(input.ltv),annual=nonNegative(input.annualRate),months=finite(input.months),fee=nonNegative(input.fee),gst=nonNegative(input.gst),entered=nonNegative(input.enteredAmount);
- if([grams,rate,ltv,annual,fee,gst].some(x=>!Number.isFinite(x))||!Number.isInteger(months)||months<1||ltv>100||gst>100)return null;
+ if([grams,rate,ltv,annual,fee,gst].some(x=>!Number.isFinite(x))||grams<=0||rate<=0||ltv<=0||!Number.isInteger(months)||months<1||ltv>100||gst>100)return null;
  const goldValue=round2(grams*rate),maxLoan=round2(goldValue*ltv/100),principal=entered>0?entered:maxLoan;
  const emi=monthlyEmi(principal,annual,months);
  if(emi===null)return null;
