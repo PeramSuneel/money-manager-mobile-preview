@@ -29,7 +29,7 @@ try {
   await page.route('https://r.jina.ai/**', async route => {
     const url = route.request().url();
     if (url.includes('gold-rates/bangalore.html')) {
-      await route.fulfill({ status: 200, contentType: 'text/plain', body: '1 | ₹14,346 (-256) | ₹13,150 (-235) | ₹10,759 (-193)\\n' });
+      await route.fulfill({ status: 200, contentType: 'text/plain', body: '1 | ₹14,346 (-256) | ₹13,150 (-235) | ₹10,759 (-193)\\n'.padEnd(300, ' ') });
     } else {
       await route.fulfill({ status: 503, contentType: 'text/plain', body: 'Silver source temporarily unavailable' });
     }
