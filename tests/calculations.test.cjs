@@ -65,6 +65,8 @@ test('gold and silver holding values use the matching per-gram rate',()=>{
  const rates={g24:14000,g22:13000,g18:10500,silver:150};
  assert.equal(M.metalValue('Gold','22',10,rates),130000);
  assert.equal(M.metalValue('Silver','999',10,rates),1500);
+ assert.equal(M.metalValue('Silver','925',10,rates),1388.89);
+ assert.equal(M.metalValue('Silver','900',10,rates),1351.35);
  assert.equal(M.metalValue('Silver','999',0,rates),null);
  assert.equal(M.metalValue('Gold','21',10,rates),null);
 });
