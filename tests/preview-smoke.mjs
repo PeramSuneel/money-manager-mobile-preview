@@ -181,6 +181,7 @@ try {
   await page.locator('#recordForm button[type="submit"]').click();
   if (!(await page.locator('#creditCardList').innerText()).includes('Paid')) throw new Error('Fully paid credit-card bill was not marked Paid.');
   if (!(await page.locator('#cardTotalOutstanding').innerText()).includes('0')) throw new Error('Outstanding total did not clear after full payment.');
+  await page.locator('#nav [data-page="loans"]').click();
   await page.locator('#loanAdd').click();
   await page.locator('#formFields [name="name"]').fill('Test Car Loan');
   await page.locator('#formFields [name="type"]').selectOption('Car loan');
