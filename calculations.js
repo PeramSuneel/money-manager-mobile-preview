@@ -35,7 +35,12 @@ function metalValue(metal,purity,grams,rates){
  const weight=nonNegative(grams);
  if(!Number.isFinite(weight)||weight<=0||!rates)return null;
  const kind=String(metal||'Gold').toLowerCase();
- const rate=kind==='silver'?nonNegative(rates.silver):nonNegative(rates['g'+String(purity)]);
+ let rate;
+ if(kind==='silver'){
+  const base=nonNegative(rates.silver),fineness=finite(purity);
+  if(!Number.isFinite(base)||base<=0||!Number.isFinite(fineness)||fineness<=0||fineness>999)return null;
+  rate=base*fineness/999;
+ }else rate=nonNegative(rates['g'+String(purity)]);
  if(!Number.isFinite(rate)||rate<=0)return null;
  return round2(weight*rate);
 }
