@@ -139,11 +139,24 @@ try {
   await page.locator('#formFields [name="dueDate"]').fill('2026-11-12');
   await page.locator('#recordForm button[type="submit"]').click();
   await page.locator('#creditCardList').getByText('Test Bank').waitFor();
+  const cardText = await page.locator('#creditCardList').innerText();
+  if (!cardText.includes('12,500') || !cardText.includes('Due date: 2026-11-12') || !cardText.includes('Minimum due: 625')) {
+    throw new Error('Credit-card bill amount, due date, or minimum due is not displayed.');
+  }
   if (!(await page.locator('#cardTotalOutstanding').innerText()).includes('12,500')) throw new Error('Credit card outstanding total is incorrect.');
+  const transactionsBeforeCardPayment = await page.locator('#txMobileList .tx-mobile-card').count();
   await page.locator('[data-pay-card]').click();
   await page.locator('#formFields [name="paymentAmount"]').fill('5000');
   await page.locator('#recordForm button[type="submit"]').click();
   if (!(await page.locator('#creditCardList').innerText()).includes('7,500')) throw new Error('Partial credit-card payment was not calculated.');
+  if ((await page.locator('#txMobileList .tx-mobile-card').count()) !== transactionsBeforeCardPayment) {
+    throw new Error('Credit-card bill payment was incorrectly added as a second expense.');
+  }
+  await page.locator('[data-pay-card]').click();
+  await page.locator('#formFields [name="paymentAmount"]').fill('7500');
+  await page.locator('#recordForm button[type="submit"]').click();
+  if (!(await page.locator('#creditCardList').innerText()).includes('Paid')) throw new Error('Fully paid credit-card bill was not marked Paid.');
+  if (!(await page.locator('#cardTotalOutstanding').innerText()).includes('0')) throw new Error('Outstanding total did not clear after full payment.');
   if (errors.length) throw new Error('Browser errors: ' + errors.join(' | '));
   console.log('PASS: mobile dashboard order, live gold rates, gold holding, searchable dropdowns, mobile transaction cards, All/Income/Spending filters, dashboard navigation, and ₹99,00,000 display.');
 } finally {
