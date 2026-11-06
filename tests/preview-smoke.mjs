@@ -129,8 +129,13 @@ try {
   await page.locator('#loanGoldGst').fill('18');
   if (!(await page.locator('#goldLoanBreakdown').innerText()).includes('GST on processing fee')) throw new Error('Gold-loan fee/GST breakdown did not render.');
   if ((await page.locator('#goldLoanEmi').innerText()).trim() === '—') throw new Error('Gold-loan EMI did not calculate with valid inputs.');
+  await page.locator('#loanGoldAmount').fill('120000');
+  await page.locator('#loanGoldRate').fill('0');
+  const ltvBreakdown = await page.locator('#goldLoanBreakdown').innerText();
+  if (!ltvBreakdown.includes('Amount requested') || !ltvBreakdown.includes('98,625')) throw new Error('Gold-loan amount above LTV was not separated from the eligible amount.');
+  if (!(await page.locator('#goldLoanEmi').innerText()).includes('8,218.75')) throw new Error('Gold-loan EMI was not capped to the LTV-eligible principal.');
 
-  if (await page.locator('#goldHoldingRows tr').count() !== 1) throw new Error('Gold holding did not create exactly one row.');
+  if (await page.locator('#goldHoldingRows tr').count() !== 2) throw new Error('Gold and silver holdings should create exactly two rows.');
   await page.locator('#nav [data-page="transactions"]').click();
   await page.locator('#txAdd').click();
   const type = page.locator('#formFields [name="type"]');
@@ -199,9 +204,12 @@ try {
   await page.locator('#formFields [name="last4"]').fill('4521');
   await page.locator('#formFields [name="creditLimit"]').fill('100000');
   await page.locator('#formFields [name="billAmount"]').fill('12500');
-  await page.locator('#formFields [name="minimumDue"]').fill('625');
+  await page.locator('#formFields [name="minimumDue"]').fill('13000');
   await page.locator('#formFields [name="statementDate"]').fill('2026-11-01');
   await page.locator('#formFields [name="dueDate"]').fill('2026-11-12');
+  await page.locator('#recordForm button[type="submit"]').click();
+  if (!(await page.locator('#modal').evaluate(el => el.classList.contains('open')))) throw new Error('Invalid credit-card minimum due should keep the form open for correction.');
+  await page.locator('#formFields [name="minimumDue"]').fill('625');
   await page.locator('#recordForm button[type="submit"]').click();
   await page.locator('#creditCardList').getByText('Test Bank').waitFor();
   const cardText = await page.locator('#creditCardList').innerText();
