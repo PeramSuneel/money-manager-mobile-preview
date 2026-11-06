@@ -104,8 +104,31 @@ try {
   if (!transactionText.includes('Spending') || !transactionText.includes('Custom category') || !transactionText.includes('Custom payment')) {
     throw new Error('Saved transaction did not preserve custom category/payment or Spending label.');
   }
+  if (!(await page.locator('#txMobileList').innerText()).includes('Preview smoke test')) throw new Error('Mobile transaction cards are not rendering.');
+  if (!(await page.locator('.tx-desktop-table').isHidden())) throw new Error('Desktop transaction table should be hidden on mobile to avoid horizontal sliding.');
+  await page.locator('#txAdd').click();
+  await page.locator('#formFields [name="type"]').selectOption('Income');
+  await page.locator('#formFields [name="description"]').fill('Large income test');
+  await page.locator('#formFields [name="category"]').fill('Salary');
+  await page.locator('#formFields [name="account"]').fill('Bank');
+  await page.locator('#formFields [name="amount"]').fill('9900000');
+  await page.locator('#recordForm button[type="submit"]').click();
+  await page.locator('#modal.open').waitFor({ state: 'detached', timeout: 3000 }).catch(async () => {
+    if (await page.locator('#modal').getAttribute('aria-hidden') !== 'true') throw new Error('Income transaction form did not close after saving.');
+  });
+  await page.locator('[data-page="dashboard"]').click();
+  if (!(await page.locator('#dashIncome').innerText()).includes('99,00,000')) throw new Error('Large monthly income is not fully displayed.');
+  await page.locator('#dashIncome').click();
+  if (!(await page.locator('#page-transactions').evaluate(el => el.classList.contains('active')))) throw new Error('Monthly income metric did not open Transactions.');
+  if ((await page.locator('.tx-filter.active').getAttribute('data-tx-filter')) !== 'Income') throw new Error('Monthly income metric did not apply the Income filter.');
+  if (!(await page.locator('#txMobileList').innerText()).includes('Large income test')) throw new Error('Income-filtered transaction list is missing the income record.');
+  await page.locator('.tx-filter[data-tx-filter="All"]').click();
+  if (!(await page.locator('#txMobileList').innerText()).includes('Preview smoke test')) throw new Error('All transactions filter did not restore all records.');
+  await page.locator('[data-page="dashboard"]').click();
+  await page.locator('#dashExpense').click();
+  if ((await page.locator('.tx-filter.active').getAttribute('data-tx-filter')) !== 'Expense') throw new Error('Monthly spending metric did not apply the Spending filter.');
   if (errors.length) throw new Error('Browser errors: ' + errors.join(' | '));
-  console.log('PASS: mobile dashboard order, visible live gold rates despite silver-feed failure, gold holding valuation, searchable category/payment dropdowns, custom values, and Spending terminology.');
+  console.log('PASS: mobile dashboard order, live gold rates, gold holding, searchable dropdowns, mobile transaction cards, All/Income/Spending filters, dashboard navigation, and ₹99,00,000 display.');
 } finally {
   await browser.close();
   server.close();
