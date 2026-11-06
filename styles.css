@@ -1173,3 +1173,67 @@ html[data-theme="dark"] .primary-navigation .nav-link.active[data-page="reports"
     stroke:currentColor!important;
   }
 }
+
+
+/* Verified compact layout correction: reduce the actual summary tile footprint.
+   Remove the unwanted gold left-edge stripe from navigation items while retaining
+   a visible category-coloured active state (including Overview). */
+@media(max-width:720px){
+  #page-creditcards .metric-grid.three,
+  #page-loans .metric-grid.three{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:6px!important;
+    margin:0 0 9px!important;
+    align-items:stretch!important;
+  }
+  #page-creditcards .metric-grid.three .metric-card,
+  #page-loans .metric-grid.three .metric-card{
+    box-sizing:border-box!important;
+    height:72px!important;
+    min-height:72px!important;
+    max-height:72px!important;
+    padding:7px 5px!important;
+    gap:0!important;
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:flex-start!important;
+    overflow:hidden!important;
+  }
+  #page-creditcards .metric-grid.three .metric-label,
+  #page-loans .metric-grid.three .metric-label{
+    min-height:0!important;
+    height:auto!important;
+    font-size:9px!important;
+    line-height:1.15!important;
+    white-space:normal!important;
+  }
+  #page-creditcards .metric-grid.three .metric-card>strong,
+  #page-loans .metric-grid.three .metric-card>strong{
+    margin:5px 0 0!important;
+    font-size:clamp(12px,3.8vw,15.5px)!important;
+    line-height:1.05!important;
+    letter-spacing:-.35px!important;
+    white-space:nowrap!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+  }
+  #page-creditcards .metric-grid.three .metric-card>small,
+  #page-loans .metric-grid.three .metric-card>small{
+    display:none!important;
+  }
+}
+/* No gold left-edge stripe on any selected navigation item.
+   Keep the active tab clearly highlighted with its own category colour. */
+.nav-link.active{box-shadow:none!important}
+@media(max-width:720px){
+  .primary-navigation .nav-link.active{
+    border-left:0!important;
+    border-right:0!important;
+    border-bottom:0!important;
+    border-top:3px solid currentColor!important;
+  }
+  .primary-navigation .nav-link.active[data-page="dashboard"]{
+    color:var(--nav-gold-dark)!important;
+    background:var(--gold-soft)!important;
+  }
+}
