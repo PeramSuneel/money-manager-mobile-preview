@@ -867,3 +867,16 @@ html,body{min-height:100%;height:auto}
  .tx-filter-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:10px}
  .tx-filter{padding:8px 5px;text-align:center;white-space:nowrap;font-size:10px}
 }
+/* Compact shared page header: reclaim vertical space on every screen. */
+@media(min-width:721px){
+ .main{padding-top:18px!important}
+ .topbar{margin-top:0!important;margin-bottom:12px!important}
+ .topbar h1{font-size:clamp(20px,2.2vw,26px)!important;line-height:1.2!important}
+ .topbar .eyebrow{font-size:9px!important;line-height:1.2!important}
+}
+@media(max-width:720px){
+ .main{padding-top:8px!important}
+ .topbar{margin-top:2px!important;margin-bottom:9px!important;gap:6px!important}
+ .topbar h1{font-size:18px!important;line-height:1.2!important;margin:1px 0 0!important}
+ .topbar .eyebrow{font-size:8px!important;line-height:1.15!important;letter-spacing:1px!important}
+}
