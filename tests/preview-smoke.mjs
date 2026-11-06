@@ -26,7 +26,14 @@ const errors = [];
 try {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
   page.on('pageerror', error => errors.push(error.message));
-  await page.addInitScript(() => localStorage.setItem('mmMarketCache.v2', JSON.stringify({rates:{g24:14500,g22:13290,g18:10875,silver:180,change24:100,change22:90,change18:75,changeSilver:2},stamp:'2026-11-06',source:'Smoke test rates',savedAt:Date.now()})));
+  await page.route('https://r.jina.ai/**', async route => {
+    const url = route.request().url();
+    if (url.includes('gold-rates/bangalore.html')) {
+      await route.fulfill({ status: 200, contentType: 'text/plain', body: '1 | ₹14,346 (-256) | ₹13,150 (-235) | ₹10,759 (-193)\\n' });
+    } else {
+      await route.fulfill({ status: 503, contentType: 'text/plain', body: 'Silver source temporarily unavailable' });
+    }
+  });
   await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
   await page.locator('#heroNetWorth').waitFor();
 
@@ -48,7 +55,7 @@ try {
     throw new Error('Dashboard rates heading is missing.');
   }
   if (await page.locator('#dashboardMetalContent').isHidden()) throw new Error('Dashboard gold/silver rates are hidden by default.');
-  if ((await page.locator('#dashGold24').innerText()).trim() === '—') throw new Error('Cached gold rate is not rendered on dashboard.');
+  await page.waitForFunction(() => document.querySelector('#dashGold24')?.innerText.includes('14,346'));\n  if (!(await page.locator('#dashGold22').innerText()).includes('13,150')) throw new Error('Live gold rates did not render when the silver feed was unavailable.');
 
   await page.locator('#menuToggle').click();
   await page.locator('#nav [data-page="markets"]').click();
@@ -98,7 +105,7 @@ try {
     throw new Error('Saved transaction did not preserve custom category/payment or Spending label.');
   }
   if (errors.length) throw new Error('Browser errors: ' + errors.join(' | '));
-  console.log('PASS: mobile dashboard order, visible cached metal rates, gold holding valuation, searchable category/payment dropdowns, custom values, and Spending terminology.');
+  console.log('PASS: mobile dashboard order, visible live gold rates despite silver-feed failure, gold holding valuation, searchable category/payment dropdowns, custom values, and Spending terminology.');
 } finally {
   await browser.close();
   server.close();
