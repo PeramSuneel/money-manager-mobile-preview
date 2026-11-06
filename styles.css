@@ -939,3 +939,25 @@ html,body{min-height:100%;height:auto}
     -webkit-backdrop-filter:none!important;
   }
 }
+
+/* Keep active navigation accents consistent across the desktop side navigation and mobile bottom bar. */
+:root{--nav-green-dark:#176b4b;--nav-red-dark:#a83f49;--nav-gold-dark:#8d642d;--nav-purple-dark:#66509b}
+html[data-theme="dark"]{--nav-green-dark:#65c99f;--nav-red-dark:#ef8b91;--nav-gold-dark:#e4bd7b;--nav-purple-dark:#c1a9f0}
+.sidebar .nav-link.active{border-left:3px solid currentColor;padding-left:9px}
+.sidebar .nav-link.active[data-page="dashboard"],
+.primary-navigation .nav-link.active[data-page="dashboard"]{color:var(--nav-gold-dark)!important;background:var(--gold-soft)!important}
+.sidebar .nav-link.active[data-page="transactions"],
+.primary-navigation .nav-link.active[data-page="transactions"]{color:var(--nav-green-dark)!important;background:var(--green-soft)!important}
+.sidebar .nav-link.active[data-page="creditcards"],
+.primary-navigation .nav-link.active[data-page="creditcards"]{color:var(--nav-green-dark)!important;background:var(--green-soft)!important}
+.sidebar .nav-link.active[data-page="loans"],
+.primary-navigation .nav-link.active[data-page="loans"]{color:var(--nav-red-dark)!important;background:var(--red-soft)!important}
+.sidebar .nav-link.active[data-page="markets"],
+.primary-navigation .nav-link.active[data-page="markets"]{color:var(--nav-gold-dark)!important;background:var(--gold-soft)!important}
+.sidebar .nav-link.active[data-page="reports"],
+.primary-navigation .nav-link.active[data-page="reports"]{color:var(--nav-purple-dark)!important;background:#f0edfa!important}
+.sidebar .nav-link.active[data-page="settings"],
+.primary-navigation .nav-link.active[data-page="settings"]{color:var(--text)!important;background:var(--surface-2)!important}
+html[data-theme="dark"] .sidebar .nav-link.active[data-page="reports"],
+html[data-theme="dark"] .primary-navigation .nav-link.active[data-page="reports"]{background:#302942!important}
+@media(max-width:720px){.sidebar .nav-link.active{border-left:0;border-top:3px solid currentColor;padding-left:1px;padding-top:2px}}
