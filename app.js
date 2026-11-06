@@ -171,8 +171,10 @@ const menuToggle=$('menuToggle'),mainNav=$('nav');menuToggle?.addEventListener('
 const dashboardMetalToggle=$('dashboardMetalToggle'),dashboardMetalContent=$('dashboardMetalContent');
 if(dashboardMetalToggle&&dashboardMetalContent){
  let collapsed=false;
- const applyMetalCollapse=()=>{dashboardMetalContent.hidden=collapsed;dashboardMetalToggle.textContent=collapsed?'⌄':'⌃';dashboardMetalToggle.setAttribute('aria-expanded',String(!collapsed));dashboardMetalToggle.setAttribute('aria-label',collapsed?'Expand precious metals':'Minimize precious metals');dashboardMetalToggle.title=collapsed?'Expand precious metals':'Minimize precious metals'};
- dashboardMetalToggle.addEventListener('click',()=>{collapsed=!collapsed;applyMetalCollapse();try{localStorage.setItem('mmDashboardMetalsCollapsed.v1',collapsed?'1':'0')}catch{}});
+ const applyMetalCollapse=()=>{dashboardMetalContent.hidden=collapsed;dashboardMetalToggle.textContent=collapsed?'+':'−';dashboardMetalToggle.setAttribute('aria-expanded',String(!collapsed));dashboardMetalToggle.setAttribute('aria-label',collapsed?'Expand precious metals':'Minimize precious metals');dashboardMetalToggle.title=collapsed?'Expand precious metals':'Minimize precious metals'};
+ const toggleMetalCollapse=()=>{collapsed=!collapsed;applyMetalCollapse();try{localStorage.setItem('mmDashboardMetalsCollapsed.v1',collapsed?'1':'0')}catch{}};
+ dashboardMetalToggle.addEventListener('click',toggleMetalCollapse);
+ document.querySelector('.dashboard-metals-heading')?.addEventListener('click',e=>{if(e.target.closest('button'))return;toggleMetalCollapse()});
  applyMetalCollapse();
 }
 window.addEventListener('money-manager-native-back',()=>{if($('modal').classList.contains('open')){closeForm();return}if(mainNav?.classList.contains('menu-open')){mainNav.classList.remove('menu-open');menuToggle?.setAttribute('aria-expanded','false');return}if(pageHistory.length>1||event.detail?.canGoBack){history.back();return}const current=(location.hash||'#dashboard').slice(1);if(current!=='dashboard'){navigate('dashboard');return}notify('You are already on Overview')});
