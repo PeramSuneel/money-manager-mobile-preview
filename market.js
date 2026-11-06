@@ -141,24 +141,47 @@ function renderDayChange(id,purity){
  if(value)value.style.setProperty('color',change.delta>0?'var(--green)':change.delta<0?'var(--red)':'var(--muted)','important');
 }
 async function refreshRates(){
- if(refreshing)return;refreshing=true;setStatus('Fetching Goodreturns gold and silver rates…');
- try{
-  const [goldPage,silverPage]=await Promise.all([fetchReaderPage('gold-rates/bangalore.html'),fetchReaderPage('silver-rates/bangalore.html')]);
-  const parsed=parseRates(goldPage),silver=parseSilverRate(silverPage),silverChange=parseSilverChange(silverPage);rates={...parsed,silver,changeSilver:silverChange};
-  const history=parseGoldHistory(goldPage),silverHistory=parseSilverHistory(silverPage);
-  mergePublishedMetalHistory(history,silverHistory);
-  const datePattern=/(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{1,2},?\s+20\d{2}|\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+20\d{2}/i;
-  const dateMatch=silverPage.match(datePattern)||goldPage.match(datePattern);
-  stamp=dateMatch?dateMatch[0]:new Date().toISOString();
-  mergeGoldHistory(history,parsed,dateMatch?.[0]||'');
-  recordDailyMetalRates(rates);
-  source='Goodreturns · Bangalore · gold and silver published indicative rates';
+ if(refreshing)return;
+ refreshing=true;
+ setStatus('Fetching Goodreturns gold and silver rates…');
+ const results=await Promise.allSettled([
+  fetchReaderPage('gold-rates/bangalore.html'),
+  fetchReaderPage('silver-rates/bangalore.html')
+ ]);
+ const errors=[];
+ let goldUpdated=false,silverUpdated=false;
+ const datePattern=/(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\s+\d{1,2},?\s+20\d{2}|\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+20\d{2}/i;
+ if(results[0].status==='fulfilled'){
+  try{
+   const goldPage=results[0].value,parsed=parseRates(goldPage);
+   rates={...(rates||{}),...parsed};
+   const dateMatch=goldPage.match(datePattern);
+   if(dateMatch)stamp=dateMatch[0];
+   try{const history=parseGoldHistory(goldPage);mergeGoldHistory(history,parsed,dateMatch?.[0]||'')}catch(historyError){}
+   goldUpdated=true;
+  }catch(e){errors.push('Gold: '+(e?.message||'could not read rates'))}
+ }else errors.push('Gold: source unavailable');
+ if(results[1].status==='fulfilled'){
+  try{
+   const silverPage=results[1].value,silver=parseSilverRate(silverPage),silverChange=parseSilverChange(silverPage);
+   rates={...(rates||{}),silver,changeSilver:silverChange};
+   const dateMatch=silverPage.match(datePattern);
+   if(dateMatch&&!stamp)stamp=dateMatch[0];
+   try{mergePublishedMetalHistory([],parseSilverHistory(silverPage))}catch(historyError){}
+   silverUpdated=true;
+  }catch(e){errors.push('Silver: '+(e?.message||'could not read rates'))}
+ }else errors.push('Silver: source unavailable');
+ if(rates){
+  source='Goodreturns · Bangalore · published indicative rates';
+  if(goldUpdated&&silverUpdated)recordDailyMetalRates(rates);
   try{localStorage.setItem('mmMarketCache.v2',JSON.stringify({rates,stamp,source,savedAt:Date.now()}))}catch{}
-  draw();setStatus('Successfully updated gold and silver from Goodreturns · '+displayTime(stamp));
- }catch(e){
-  setStatus('Could not update both metal rates: '+(e?.message||'Network or proxy error')+'. Showing last saved rates if available.');
-  if(rates)draw();else ['gold24','gold22','gold18','dashGold24','dashGold22','dashGold18','silverGram','dashSilver'].forEach(id=>{if($(id))$(id).textContent='Unavailable'});
- }finally{refreshing=false}
+  draw();
+ }
+ if(goldUpdated&&silverUpdated)setStatus('Successfully updated gold and silver from Goodreturns · '+displayTime(stamp));
+ else if(goldUpdated)setStatus('Gold rates updated · Silver rates temporarily unavailable'+(errors.length?'. '+errors.join('; '):''));
+ else if(silverUpdated)setStatus('Silver rates updated · Gold rates temporarily unavailable'+(errors.length?'. '+errors.join('; '):''));
+ else setStatus('Could not update metal rates: '+errors.join('; ')+'. Showing last saved rates if available.');
+ refreshing=false;
 }
 function selectedRate(metal,purity){if(metal==='silver')return rates?.silver||0;return purity==='18'?(rates?.g18||0):purity==='22'?(rates?.g22||0):(rates?.g24||0)}
 function syncRates(){const im=$('investMetal')?.value||'gold',ip=$('investPurity')?.value||'22',jm=$('jewelMetal')?.value||'gold',jp=$('jewelPurity')?.value||'22';if($('investRate')&&!$('investRate').dataset.userEdited)$('investRate').value=selectedRate(im,ip)||'';if($('jewelRate')&&!$('jewelRate').dataset.userEdited)$('jewelRate').value=selectedRate(jm,jp)||''}
