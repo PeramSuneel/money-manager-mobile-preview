@@ -171,7 +171,7 @@ const menuToggle=$('menuToggle'),mainNav=$('nav');menuToggle?.addEventListener('
 const dashboardMetalToggle=$('dashboardMetalToggle'),dashboardMetalContent=$('dashboardMetalContent');
 if(dashboardMetalToggle&&dashboardMetalContent){
  let collapsed=false;
- const applyMetalCollapse=()=>{dashboardMetalContent.hidden=collapsed;dashboardMetalToggle.textContent=collapsed?'+':'−';dashboardMetalToggle.setAttribute('aria-expanded',String(!collapsed));dashboardMetalToggle.setAttribute('aria-label',collapsed?'Expand precious metals':'Minimize precious metals');dashboardMetalToggle.title=collapsed?'Expand precious metals':'Minimize precious metals'};
+ const applyMetalCollapse=()=>{dashboardMetalContent.hidden=collapsed;dashboardMetalToggle.textContent=collapsed?'⌄':'⌃';dashboardMetalToggle.setAttribute('aria-expanded',String(!collapsed));dashboardMetalToggle.setAttribute('aria-label',collapsed?'Expand precious metals':'Minimize precious metals');dashboardMetalToggle.title=collapsed?'Expand precious metals':'Minimize precious metals'};
  dashboardMetalToggle.addEventListener('click',()=>{collapsed=!collapsed;applyMetalCollapse();try{localStorage.setItem('mmDashboardMetalsCollapsed.v1',collapsed?'1':'0')}catch{}});
  applyMetalCollapse();
 }
