@@ -746,3 +746,34 @@ html,body{min-height:100%;height:auto}
 
 /* Keep dialogs above the sticky mobile navigation (z-index 40–50). */
 #modal.modal-backdrop{z-index:1000!important}
+
+
+/* Dashboard: keep the three headline figures together to reduce page height. */
+.dashboard-metrics{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px}
+.dashboard-metrics .metric-card{padding:15px 16px}
+@media(max-width:1100px){.dashboard-metrics{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:720px){
+ .dashboard-metrics{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px}
+ .dashboard-metrics .metric-card{padding:10px 8px;border-radius:12px}
+ .dashboard-metrics .metric-label{font-size:9px;line-height:1.25;min-height:25px;align-items:flex-start}
+ .dashboard-metrics .metric-icon{width:21px;height:21px;font-size:11px;flex:0 0 21px}
+ .dashboard-metrics .metric-card>strong{font-size:clamp(13px,3.8vw,17px);letter-spacing:-.45px;margin:8px 0 2px}
+ .dashboard-metrics .metric-card>small{font-size:8px}
+}
+@media(max-width:360px){
+ .dashboard-metrics{gap:5px}
+ .dashboard-metrics .metric-card{padding:9px 6px}
+ .dashboard-metrics .metric-label{font-size:8px}
+ .dashboard-metrics .metric-card>strong{font-size:12px}
+}
+
+/* Searchable category and payment-method dropdowns in transaction forms. */
+.suggest-combo{position:relative;display:flex;align-items:stretch;width:100%;min-width:0}
+.suggest-combo input{padding-right:38px!important}
+.suggest-toggle{position:absolute;right:3px;top:3px;bottom:3px;width:31px;border:0;border-left:1px solid var(--line);border-radius:0 7px 7px 0;background:transparent;color:var(--muted);font-size:17px}
+.suggest-toggle:hover{color:var(--gold);background:var(--gold-soft)}
+.suggest-menu{position:absolute;left:0;right:0;top:calc(100% + 5px);z-index:1200;max-height:190px;overflow:auto;padding:5px;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 28px rgba(20,30,45,.18)}
+.suggest-menu[hidden]{display:none!important}
+.suggest-option{display:block;width:100%;padding:9px 10px;border:0;border-radius:7px;background:transparent;color:var(--text);text-align:left;font-size:12px}
+.suggest-option:hover,.suggest-option:focus{outline:0;background:var(--gold-soft);color:var(--gold)}
+.suggest-empty{padding:9px 10px;color:var(--muted);font-size:11px;line-height:1.4}
