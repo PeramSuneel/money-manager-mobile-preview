@@ -247,14 +247,28 @@ try {
   if (!(await loanCard.evaluate(el => el.classList.contains('metric-card'))) || !(await loanCard.innerText()).includes('12,500')) {
     throw new Error('Loan details are not displayed in the shared metric-card style.');
   }
-  const horizontalOverflow = await page.evaluate(() => ({
-    document: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
-    scrollable: [...document.querySelectorAll('*')].filter(el => {
-      const style = getComputedStyle(el);
-      return (style.overflowX === 'auto' || style.overflowX === 'scroll') && el.scrollWidth > el.clientWidth + 1;
-    }).map(el => el.id || el.className || el.tagName).slice(0, 10)
-  }));
-  if (horizontalOverflow.document || horizontalOverflow.scrollable.length) throw new Error('Horizontal sliding/scrolling remains in the app: ' + JSON.stringify(horizontalOverflow));
+  const pageIds = ['dashboard','transactions','creditcards','loans','markets','reports','settings'];
+  const assertNoHorizontalOverflow = async label => {
+    const horizontalOverflow = await page.evaluate(() => ({
+      document: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+      scrollable: [...document.querySelectorAll('*')].filter(el => {
+        const style = getComputedStyle(el);
+        return (style.overflowX === 'auto' || style.overflowX === 'scroll') && el.scrollWidth > el.clientWidth + 1;
+      }).map(el => el.id || el.className || el.tagName).slice(0, 10)
+    }));
+    if (horizontalOverflow.document || horizontalOverflow.scrollable.length) {
+      throw new Error('Horizontal sliding/scrolling remains on '+label+': ' + JSON.stringify(horizontalOverflow));
+    }
+  };
+  for (const pageId of pageIds) {
+    await page.locator('#nav [data-page="'+pageId+'"]').click();
+    await assertNoHorizontalOverflow('mobile '+pageId);
+  }
+  await page.setViewportSize({width:1366,height:900});
+  for (const pageId of pageIds) {
+    await page.locator('#nav [data-page="'+pageId+'"]').click();
+    await assertNoHorizontalOverflow('desktop '+pageId);
+  }
   if (errors.length) throw new Error('Browser errors: ' + errors.join(' | '));
   console.log('PASS: dashboard, live gold/silver rates, pre-save holding values, combined holdings, currency math, transactions, card payments, loans, and no horizontal scrolling.');
 } finally {
