@@ -172,13 +172,12 @@ function renderGoldHoldings(){
  let totalGrams=0,totalValue=0;
  rows.innerHTML=goldHoldings.map(item=>{const rate=goldRateForPurity(item.purity),value=rate*num(item.grams);totalGrams+=num(item.grams);totalValue+=value;return '<tr><td>'+String(item.name||'Gold').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))+'</td><td>'+item.purity+'K</td><td>'+num(item.grams).toFixed(3)+' g</td><td>'+fmt(value)+'</td><td><button class="text-button" type="button" data-remove-gold-holding="'+item.id+'">Remove</button></td></tr>'}).join('');
  $('goldHoldingEmpty')?.classList.toggle('show',!goldHoldings.length);
- if($('goldHoldingValue'))$('goldHoldingValue').textContent=goldHoldings.length?fmt(totalValue):'—';
- if($('goldHoldingSummary'))$('goldHoldingSummary').textContent=goldHoldings.length?totalGrams.toFixed(3)+' g total gold · estimated at today’s published rates':'Add your gold weight to calculate its value.';
+ if($('goldHoldingValue'))$('goldHoldingValue').textContent=goldHoldings.length?(goldRateForPurity(goldHoldings[0]?.purity)?fmt(totalValue):'Rate unavailable'):'—';
+ if($('goldHoldingSummary'))$('goldHoldingSummary').textContent=goldHoldings.length?totalGrams.toFixed(3)+' g total gold · '+(goldRateForPurity(goldHoldings[0]?.purity)?'estimated at today’s published rates':'saved; value will update when today’s rates load'):'Add your gold weight to calculate its value.';
 }
 function addGoldHolding(){
  const grams=num($('holdingGrams')?.value),purity=$('holdingPurity')?.value||'22',name=$('holdingName')?.value.trim()||'Gold';
  if(!(grams>0)){notifyGold('Enter a valid gold weight.');return}
- if(!goldRateForPurity(purity)){notifyGold('Today's gold rate is not available yet. Refresh rates and try again.');return}
  goldHoldings.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name,purity,grams});
  try{localStorage.setItem('mmGoldHoldings.v1',JSON.stringify(goldHoldings))}catch{}
  $('holdingName').value='';$('holdingGrams').value='';renderGoldHoldings();
