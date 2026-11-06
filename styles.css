@@ -1089,3 +1089,40 @@ html[data-theme="dark"] .primary-navigation .nav-link.active[data-page="reports"
   }
   .loan-card-details b{font-size:11px!important;line-height:1.25!important}
 }
+
+
+/* Compact final pass requested: neutral Overview selector and shorter summary tiles. */
+@media(max-width:720px){
+  .primary-navigation .nav-link.active[data-page="dashboard"]{
+    color:var(--text)!important;
+    background:var(--surface-2)!important;
+    border-top-color:var(--muted)!important;
+  }
+  #page-creditcards>.metric-grid.three,
+  #page-loans>.metric-grid.three{
+    gap:6px!important;
+    margin-bottom:11px!important;
+  }
+  #page-creditcards>.metric-grid.three>.metric-card,
+  #page-loans>.metric-grid.three>.metric-card{
+    height:98px!important;
+    min-height:98px!important;
+    padding:10px 8px!important;
+  }
+  #page-creditcards>.metric-grid.three .metric-label,
+  #page-loans>.metric-grid.three .metric-label{
+    min-height:24px!important;
+    font-size:9px!important;
+    line-height:1.2!important;
+  }
+  #page-creditcards>.metric-grid.three .metric-card>strong,
+  #page-loans>.metric-grid.three .metric-card>strong{
+    margin:7px 0 0!important;
+    font-size:clamp(13px,3.7vw,17px)!important;
+    line-height:1.1!important;
+  }
+  #page-creditcards>.metric-grid.three .metric-card>small,
+  #page-loans>.metric-grid.three .metric-card>small{
+    display:none!important;
+  }
+}
