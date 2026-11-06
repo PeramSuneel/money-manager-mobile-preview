@@ -1,4 +1,4 @@
-name: Deploy mobile browser preview
+name: Test and deploy mobile browser preview
 
 on:
   push:
@@ -15,7 +15,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright
+        run: npm install --no-save playwright
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Check application JavaScript
+        run: node --check app.js
+      - name: Run mobile preview smoke tests
+        run: node tests/preview-smoke.mjs
+
   deploy:
+    needs: test
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
