@@ -55,7 +55,8 @@ try {
     throw new Error('Dashboard rates heading is missing.');
   }
   if (await page.locator('#dashboardMetalContent').isHidden()) throw new Error('Dashboard gold/silver rates are hidden by default.');
-  await page.waitForFunction(() => document.querySelector('#dashGold24')?.innerText.includes('14,346'));\n  if (!(await page.locator('#dashGold22').innerText()).includes('13,150')) throw new Error('Live gold rates did not render when the silver feed was unavailable.');
+  await page.waitForFunction(() => document.querySelector('#dashGold24')?.innerText.includes('14,346'));
+  if (!(await page.locator('#dashGold22').innerText()).includes('13,150')) throw new Error('Live gold rates did not render when the silver feed was unavailable.');
 
   await page.locator('#menuToggle').click();
   await page.locator('#nav [data-page="markets"]').click();
@@ -127,6 +128,22 @@ try {
   await page.locator('[data-page="dashboard"]').click();
   await page.locator('#dashExpense').click();
   if ((await page.locator('.tx-filter.active').getAttribute('data-tx-filter')) !== 'Expense') throw new Error('Monthly spending metric did not apply the Spending filter.');
+  await page.locator('#nav [data-page="creditcards"]').click();
+  await page.locator('#cardAdd').click();
+  await page.locator('#formFields [name="bankName"]').fill('Test Bank');
+  await page.locator('#formFields [name="last4"]').fill('4521');
+  await page.locator('#formFields [name="creditLimit"]').fill('100000');
+  await page.locator('#formFields [name="billAmount"]').fill('12500');
+  await page.locator('#formFields [name="minimumDue"]').fill('625');
+  await page.locator('#formFields [name="statementDate"]').fill('2026-11-01');
+  await page.locator('#formFields [name="dueDate"]').fill('2026-11-12');
+  await page.locator('#recordForm button[type="submit"]').click();
+  await page.locator('#creditCardList').getByText('Test Bank').waitFor();
+  if (!(await page.locator('#cardTotalOutstanding').innerText()).includes('12,500')) throw new Error('Credit card outstanding total is incorrect.');
+  await page.locator('[data-pay-card]').click();
+  await page.locator('#formFields [name="paymentAmount"]').fill('5000');
+  await page.locator('#recordForm button[type="submit"]').click();
+  if (!(await page.locator('#creditCardList').innerText()).includes('7,500')) throw new Error('Partial credit-card payment was not calculated.');
   if (errors.length) throw new Error('Browser errors: ' + errors.join(' | '));
   console.log('PASS: mobile dashboard order, live gold rates, gold holding, searchable dropdowns, mobile transaction cards, All/Income/Spending filters, dashboard navigation, and ₹99,00,000 display.');
 } finally {
