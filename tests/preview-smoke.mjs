@@ -102,10 +102,12 @@ try {
   await page.locator('#holdingMetal').selectOption('silver');
   if (await page.locator('#holdingPurity').inputValue() !== '999') throw new Error('Silver holding purity should be set to 999 fine.');
   await page.locator('#holdingGrams').fill('10');
-  if (!(await page.locator('#holdingPreviewValue').innerText()).includes('1,500')) throw new Error('Silver holding value preview is not calculated before saving.');
+  if (!(await page.locator('#holdingPreviewValue').innerText()).includes('1,500')) throw new Error('999 silver holding value preview is not calculated before saving.');
+  await page.locator('#holdingPurity').selectOption('925');
+  if (!(await page.locator('#holdingPreviewValue').innerText()).includes('1,388.89')) throw new Error('925 sterling silver value does not apply the correct fineness adjustment.');
   await page.locator('#addGoldHolding').click();
   await page.waitForFunction(() => document.querySelector('#goldHoldingRows')?.innerText.includes('Silver'));
-  if (!(await page.locator('#goldHoldingRows').innerText()).includes('999 Fine')) throw new Error('Silver holding purity is not displayed correctly.');
+  if (!(await page.locator('#goldHoldingRows').innerText()).includes('925 Sterling')) throw new Error('Sterling silver purity is not displayed correctly.');
   if (!(await page.locator('#goldHoldingValue').innerText()).includes('₹')) throw new Error('Combined gold and silver holdings total was not calculated.');
   await page.locator('#investBudget').fill('10300');
   await page.locator('#investRate').fill('1000');
