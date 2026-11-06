@@ -42,3 +42,31 @@ test('gold-loan estimate uses monthly reducing-balance EMI and fee GST separatel
  assert.equal(M.goldLoan({grams:0,rate:6000,ltv:75,annualRate:12,months:12,fee:0,gst:18,enteredAmount:0}),null);
  assert.equal(M.goldLoan({grams:10,rate:6000,ltv:105,annualRate:12,months:12,fee:0,gst:18,enteredAmount:0}),null);
 });
+
+test('negative currency rounding is symmetric and safe',()=>{
+ assert.equal(M.round2(1.005),1.01);
+ assert.equal(M.round2(-1.005),-1.01);
+ assert.equal(M.sumMoney([100.10,-0.05,0.05]),100.10);
+ assert.equal(Number.isNaN(M.sumMoney([10,Infinity])),true);
+});
+test('credit-card remaining balance is rounded, partial and never negative',()=>{
+ assert.equal(M.remainingBalance(12500,5000),7500);
+ assert.equal(M.remainingBalance(100,100),0);
+ assert.equal(M.remainingBalance(100,125),0);
+ assert.equal(M.remainingBalance(100,-1),null);
+});
+test('lifetime transaction flow includes income and spending but excludes transfers',()=>{
+ assert.equal(M.transactionFlow([{type:'Income',amount:1000.10},{type:'Expense',amount:250.05},{type:'Transfer',amount:500}]),750.05);
+ assert.equal(M.transactionFlow([{type:'Income',amount:-5}]),null);
+});
+test('gold and silver holding values use the matching per-gram rate',()=>{
+ const rates={g24:14000,g22:13000,g18:10500,silver:150};
+ assert.equal(M.metalValue('Gold','22',10,rates),130000);
+ assert.equal(M.metalValue('Silver','999',10,rates),1500);
+ assert.equal(M.metalValue('Silver','999',0,rates),null);
+ assert.equal(M.metalValue('Gold','21',10,rates),null);
+});
+test('EMI handles zero interest and rejects non-finite results',()=>{
+ assert.equal(M.monthlyEmi(120000,0,12),10000);
+ assert.equal(M.monthlyEmi(1000000,100000,1200),null);
+});
