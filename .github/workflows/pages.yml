@@ -30,6 +30,8 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Check application JavaScript
         run: node --check app.js && node --check market.js
+      - name: Run financial calculation regression tests
+        run: node --test tests/calculations.test.cjs
       - name: Run mobile preview smoke tests
         run: node tests/preview-smoke.mjs
 
