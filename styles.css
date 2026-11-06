@@ -1237,3 +1237,69 @@ html[data-theme="dark"] .primary-navigation .nav-link.active[data-page="reports"
     background:var(--gold-soft)!important;
   }
 }
+
+
+/* Transactions: keep every field visible without horizontal scrolling.
+   Mobile cards use two compact rows; desktop table wraps within its panel. */
+#page-transactions .tx-list-panel,
+#page-transactions .tx-desktop-table{min-width:0!important;width:100%!important;max-width:100%!important;overflow-x:hidden!important}
+#page-transactions .tx-desktop-table table{
+  width:100%!important;
+  min-width:0!important;
+  table-layout:fixed!important;
+  white-space:normal!important;
+}
+#page-transactions .tx-desktop-table th,
+#page-transactions .tx-desktop-table td{
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+  padding:9px 6px!important;
+  font-size:10px!important;
+}
+#page-transactions .tx-desktop-table th:nth-child(1),
+#page-transactions .tx-desktop-table td:nth-child(1){width:12%}
+#page-transactions .tx-desktop-table th:nth-child(2),
+#page-transactions .tx-desktop-table td:nth-child(2){width:21%}
+#page-transactions .tx-desktop-table th:nth-child(3),
+#page-transactions .tx-desktop-table td:nth-child(3){width:15%}
+#page-transactions .tx-desktop-table th:nth-child(4),
+#page-transactions .tx-desktop-table td:nth-child(4){width:15%}
+#page-transactions .tx-desktop-table th:nth-child(5),
+#page-transactions .tx-desktop-table td:nth-child(5){width:11%}
+#page-transactions .tx-desktop-table th:nth-child(6),
+#page-transactions .tx-desktop-table td:nth-child(6){width:16%}
+#page-transactions .tx-desktop-table th:nth-child(7),
+#page-transactions .tx-desktop-table td:nth-child(7){width:10%}
+#page-transactions .tx-mobile-list{min-width:0!important;width:100%!important;overflow:hidden!important}
+#page-transactions .tx-mobile-card{padding:8px 0!important;min-width:0!important}
+#page-transactions .tx-mobile-top{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;gap:8px!important;min-width:0!important}
+#page-transactions .tx-mobile-top>div{min-width:0!important;display:flex!important;align-items:baseline!important;gap:7px!important;flex-wrap:wrap!important}
+#page-transactions .tx-mobile-top b{font-size:11px!important;line-height:1.2!important;min-width:0!important;overflow-wrap:anywhere!important}
+#page-transactions .tx-mobile-top small{font-size:9px!important;line-height:1.2!important;white-space:nowrap!important}
+#page-transactions .tx-mobile-top>strong{font-size:12px!important;white-space:nowrap!important}
+#page-transactions .tx-mobile-bottom{
+  display:flex!important;
+  align-items:center!important;
+  flex-wrap:nowrap!important;
+  gap:6px!important;
+  min-width:0!important;
+  margin-top:5px!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  font-size:9px!important;
+  line-height:1.2!important;
+}
+#page-transactions .tx-mobile-bottom span:first-child{
+  margin-right:auto!important;
+  min-width:0!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+#page-transactions .tx-mobile-bottom .type-pill{flex:0 0 auto!important;font-size:8px!important;padding:3px 5px!important}
+#page-transactions .tx-mobile-bottom .text-button{flex:0 0 auto!important;font-size:9px!important;padding:2px!important}
+@media(max-width:720px){
+  #page-transactions .tx-desktop-table{display:none!important}
+  #page-transactions .tx-mobile-list{display:block!important}
+  #page-transactions .tx-list-panel{padding:10px!important}
+}
