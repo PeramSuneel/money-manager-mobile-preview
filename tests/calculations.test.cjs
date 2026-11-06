@@ -38,7 +38,9 @@ test('gold-loan estimate uses monthly reducing-balance EMI and fee GST separatel
  assert.ok(Math.abs(x.total-x.emi*12)<0.01);
  const tooHigh=M.goldLoan({grams:10,rate:6000,ltv:75,annualRate:0,months:12,fee:0,gst:0,enteredAmount:50000});
  assert.equal(tooHigh.requestedTooHigh,true);
- assert.equal(tooHigh.emi,4166.67);
+ assert.equal(tooHigh.requestedAmount,50000);
+ assert.equal(tooHigh.principal,45000);
+ assert.equal(tooHigh.emi,3750);
  assert.equal(M.goldLoan({grams:0,rate:6000,ltv:75,annualRate:12,months:12,fee:0,gst:18,enteredAmount:0}),null);
  assert.equal(M.goldLoan({grams:10,rate:6000,ltv:105,annualRate:12,months:12,fee:0,gst:18,enteredAmount:0}),null);
 });
