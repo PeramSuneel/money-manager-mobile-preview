@@ -153,7 +153,7 @@ try {
   await page.locator('#recordForm button[type="submit"]').click();
   await page.locator('#creditCardList').getByText('Test Bank').waitFor();
   const cardText = await page.locator('#creditCardList').innerText();
-  if (!cardText.includes('12,500') || !cardText.includes('Due date: 2026-11-12') || !cardText.includes('Minimum due: 625')) {
+  if (!cardText.includes('12,500') || !cardText.includes('Due date: 2026-11-12') || !cardText.includes('Minimum due: ₹625')) {
     throw new Error('Credit-card bill amount, due date, or minimum due is not displayed.');
   }
   if (!(await page.locator('#cardTotalOutstanding').innerText()).includes('12,500')) throw new Error('Credit card outstanding total is incorrect.');
