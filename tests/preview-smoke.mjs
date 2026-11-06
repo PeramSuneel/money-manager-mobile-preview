@@ -60,14 +60,25 @@ try {
   });
   if (!(await page.locator('#dashGold22').innerText()).includes('13,150')) throw new Error('Live gold rates did not render when the silver feed was unavailable.');
 
-  await page.locator('#menuToggle').click();
+  const mobileNav = await page.locator('#nav').evaluate(el => {
+    const r = el.getBoundingClientRect(), s = getComputedStyle(el);
+    return { position:s.position, bottom:Math.round(innerHeight-r.bottom), columns:s.gridTemplateColumns.split(' ').length,
+      links:el.querySelectorAll('.nav-link').length, overflow:s.overflowX };
+  });
+  if (mobileNav.position !== 'fixed' || mobileNav.bottom !== 0 || mobileNav.columns !== 7 || mobileNav.links !== 7) {
+    throw new Error('Mobile navigation is not a fixed, seven-item bottom bar: ' + JSON.stringify(mobileNav));
+  }
+  if (await page.locator('#menuToggle').isVisible()) throw new Error('Mobile hamburger menu should be hidden.');
+  const brand = await page.locator('.site-navigation .brand').evaluate(el => {
+    const r=el.getBoundingClientRect(); return {left:Math.round(r.left), top:Math.round(r.top)};
+  });
+  if (brand.left > 20) throw new Error('Mobile brand is not aligned to the top-left: ' + JSON.stringify(brand));
   await page.locator('#nav [data-page="markets"]').click();
   await page.locator('#holdingGrams').fill('20');
   await page.locator('#addGoldHolding').click();
   await page.waitForFunction(() => document.querySelector('#goldHoldingRows')?.innerText.includes('20.000 g'));
   if (!(await page.locator('#goldHoldingValue').innerText()).includes('₹')) throw new Error('Gold holding value was not calculated from the cached rate.');
   if (await page.locator('#goldHoldingRows tr').count() !== 1) throw new Error('Gold holding did not create exactly one row.');
-    await page.locator('#menuToggle').click();
   await page.locator('#nav [data-page="transactions"]').click();
   await page.locator('#txAdd').click();
   const type = page.locator('#formFields [name="type"]');
