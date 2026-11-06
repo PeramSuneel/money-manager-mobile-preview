@@ -30,8 +30,15 @@ try {
     const url = route.request().url();
     if (url.includes('gold-rates/bangalore.html')) {
       await route.fulfill({ status: 200, contentType: 'text/plain', body: '1 | ₹14,346 (-256) | ₹13,150 (-235) | ₹10,759 (-193)\\n'.padEnd(300, ' ') });
+    } else if (url.includes('silver-rates/bangalore.html')) {
+      silverFetchCount += 1;
+      if (silverFetchCount === 1) {
+        await route.fulfill({ status: 503, contentType: 'text/plain', body: 'Silver source temporarily unavailable' });
+      } else {
+        await route.fulfill({ status: 200, contentType: 'text/plain', body: '| 1 | ₹ 150 | ₹ 1,500 | + ₹ 5 |\\n'.padEnd(300, ' ') });
+      }
     } else {
-      await route.fulfill({ status: 503, contentType: 'text/plain', body: 'Silver source temporarily unavailable' });
+      await route.fulfill({ status: 503, contentType: 'text/plain', body: 'Market source temporarily unavailable' });
     }
   });
   await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
@@ -85,9 +92,20 @@ try {
   if (brand.left > 20) throw new Error('Mobile brand is not aligned to the top-left: ' + JSON.stringify(brand));
   await page.locator('#nav [data-page="markets"]').click();
   await page.locator('#holdingGrams').fill('20');
+  if (!(await page.locator('#holdingPreviewValue').innerText()).includes('2,63,000')) throw new Error('Gold holding value preview is not calculated before saving.');
   await page.locator('#addGoldHolding').click();
   await page.waitForFunction(() => document.querySelector('#goldHoldingRows')?.innerText.includes('20.000 g'));
   if (!(await page.locator('#goldHoldingValue').innerText()).includes('₹')) throw new Error('Gold holding value was not calculated from the cached rate.');
+  await page.locator('#refreshMarket').click();
+  await page.waitForFunction(() => document.querySelector('#silverGram')?.innerText.includes('150'), { timeout: 10000 });
+  await page.locator('#holdingMetal').selectOption('silver');
+  if (await page.locator('#holdingPurity').inputValue() !== '999') throw new Error('Silver holding purity should be set to 999 fine.');
+  await page.locator('#holdingGrams').fill('10');
+  if (!(await page.locator('#holdingPreviewValue').innerText()).includes('1,500')) throw new Error('Silver holding value preview is not calculated before saving.');
+  await page.locator('#addGoldHolding').click();
+  await page.waitForFunction(() => document.querySelector('#goldHoldingRows')?.innerText.includes('Silver'));
+  if (!(await page.locator('#goldHoldingRows').innerText()).includes('999 Fine')) throw new Error('Silver holding purity is not displayed correctly.');
+  if (!(await page.locator('#goldHoldingValue').innerText()).includes('₹')) throw new Error('Combined gold and silver holdings total was not calculated.');
   await page.locator('#investBudget').fill('10300');
   await page.locator('#investRate').fill('1000');
   await page.locator('#investGst').fill('3');
@@ -220,8 +238,16 @@ try {
   if (!(await loanCard.evaluate(el => el.classList.contains('metric-card'))) || !(await loanCard.innerText()).includes('12,500')) {
     throw new Error('Loan details are not displayed in the shared metric-card style.');
   }
+  const horizontalOverflow = await page.evaluate(() => ({
+    document: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+    scrollable: [...document.querySelectorAll('*')].filter(el => {
+      const style = getComputedStyle(el);
+      return (style.overflowX === 'auto' || style.overflowX === 'scroll') && el.scrollWidth > el.clientWidth + 1;
+    }).map(el => el.id || el.className || el.tagName).slice(0, 10)
+  }));
+  if (horizontalOverflow.document || horizontalOverflow.scrollable.length) throw new Error('Horizontal sliding/scrolling remains in the app: ' + JSON.stringify(horizontalOverflow));
   if (errors.length) throw new Error('Browser errors: ' + errors.join(' | '));
-  console.log('PASS: mobile dashboard order, live gold rates, gold holding, searchable dropdowns, mobile transaction cards, All/Income/Spending filters, dashboard navigation, and ₹99,00,000 display.');
+  console.log('PASS: dashboard, live gold/silver rates, pre-save holding values, combined holdings, currency math, transactions, card payments, loans, and no horizontal scrolling.');
 } finally {
   await browser.close();
   server.close();
