@@ -831,3 +831,27 @@ html,body{min-height:100%;height:auto}
 .suggest-option{display:block;width:100%;padding:9px 10px;border:0;border-radius:6px;background:transparent;color:var(--text);text-align:left;font-size:12px;cursor:pointer}
 .suggest-option:hover,.suggest-option:focus{background:var(--gold-soft);color:var(--gold);outline:0}
 .suggest-empty{padding:9px 10px;color:var(--muted);font-size:11px}
+
+/* Transaction filters and compact mobile transaction cards. */
+.dashboard-metric-link{cursor:pointer}
+.dashboard-metric-link:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.tx-filter-row{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.tx-filter{border:1px solid var(--line);border-radius:999px;padding:8px 14px;background:var(--surface);color:var(--muted);font-size:11px;font-weight:700}
+.tx-filter.active{background:var(--gold-soft);border-color:color-mix(in srgb,var(--gold) 45%,var(--line));color:var(--gold)}
+.tx-mobile-list{display:none}
+.tx-mobile-card{padding:13px 2px;border-bottom:1px solid var(--line)}
+.tx-mobile-card:last-child{border-bottom:0}
+.tx-mobile-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.tx-mobile-top>div{min-width:0;display:grid;gap:3px}
+.tx-mobile-top b{font-size:12px;overflow-wrap:anywhere}
+.tx-mobile-top small,.tx-mobile-bottom{font-size:10px;color:var(--muted)}
+.tx-mobile-top>strong{font-size:13px;white-space:nowrap}
+.tx-mobile-bottom{display:flex;align-items:center;gap:10px;margin-top:9px;flex-wrap:wrap}
+.tx-mobile-bottom span:first-child{margin-right:auto}
+@media(max-width:720px){
+ .tx-desktop-table{display:none}
+ .tx-mobile-list{display:block}
+ .tx-list-panel{padding:13px}
+ .dashboard-metrics .metric-card>strong{font-size:clamp(10px,2.75vw,16px)!important;letter-spacing:-.35px;white-space:nowrap;overflow:visible;text-overflow:clip}
+ .dashboard-metrics .metric-card{min-width:0;padding:10px 6px!important}
+}
