@@ -23,6 +23,7 @@ await new Promise(resolve => server.listen(4173, '127.0.0.1', resolve));
 
 const browser = await chromium.launch({ headless: true });
 const errors = [];
+let silverFetchCount = 0;
 try {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
   page.on('pageerror', error => errors.push(error.message));
@@ -32,7 +33,7 @@ try {
       await route.fulfill({ status: 200, contentType: 'text/plain', body: '1 | ₹14,346 (-256) | ₹13,150 (-235) | ₹10,759 (-193)\\n'.padEnd(300, ' ') });
     } else if (url.includes('silver-rates/bangalore.html')) {
       silverFetchCount += 1;
-      if (silverFetchCount === 1) {
+      if (silverFetchCount <= 2) {
         await route.fulfill({ status: 503, contentType: 'text/plain', body: 'Silver source temporarily unavailable' });
       } else {
         await route.fulfill({ status: 200, contentType: 'text/plain', body: '| 1 | ₹ 150 | ₹ 1,500 | + ₹ 5 |\\n'.padEnd(300, ' ') });
