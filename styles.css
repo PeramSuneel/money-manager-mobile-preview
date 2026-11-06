@@ -777,3 +777,10 @@ html,body{min-height:100%;height:auto}
 .suggest-option{display:block;width:100%;padding:9px 10px;border:0;border-radius:7px;background:transparent;color:var(--text);text-align:left;font-size:12px}
 .suggest-option:hover,.suggest-option:focus{outline:0;background:var(--gold-soft);color:var(--gold)}
 .suggest-empty{padding:9px 10px;color:var(--muted);font-size:11px;line-height:1.4}
+
+
+/* Searchable suggestions use the browser's native datalist, avoiding clipped menus in scrollable dialogs. */
+.suggest-combo{position:relative;display:flex;align-items:stretch;width:100%;min-width:0}
+.suggest-combo input{padding-right:38px!important}
+.suggest-toggle{position:absolute;right:3px;top:3px;bottom:3px;width:31px;border:0;border-left:1px solid var(--line);border-radius:0 7px 7px 0;background:transparent;color:var(--muted);font-size:17px}
+.suggest-toggle:hover{color:var(--gold);background:var(--gold-soft)}
